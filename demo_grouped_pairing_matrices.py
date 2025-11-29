@@ -3,7 +3,7 @@ import os
 from pairing_helpers import grouped_lyndon_words, write_pairing_csv, write_pairing_latex, ensure_dir
 from datetime import datetime
 
-def main(n=4, outdir="pairings"):
+def main(n=6, outdir="pairings_n=6_extra_extra"):
     now = datetime.now()
     ensure_dir(outdir)
     groups = grouped_lyndon_words(n)
