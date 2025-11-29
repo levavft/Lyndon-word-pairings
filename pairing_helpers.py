@@ -49,6 +49,8 @@ def _lyndon_words_upto_duval(n, packed=True):
             w.append(w[-m])
         while w and w[-1] == n - 1:  # delete trailing z's
             w.pop()
+        if packed and w[0] > 0:
+            break
     words = [Word(w) for w in words]
     if packed:
         words = [w for w in words if w == w.packed()]
