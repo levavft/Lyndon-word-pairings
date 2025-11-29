@@ -107,3 +107,13 @@ def test_generated_csv_content_matches_reference():
         assert os.path.exists(gen_path), f"Missing generated file {filename}"
         compare_csv_content(ref_path, gen_path)
         print(f"✅ {filename}: content matches reference.")
+
+
+def get_maximal_value_of_dir(path):
+    M = 0
+    for filename in os.listdir(path):
+        lst = normalize_matrix(load_csv(path + "\\" + filename))
+        m = max(abs(max(l)) for l in lst if len(l) > 0)
+        if m > M:
+            M = m
+    return M
