@@ -4,7 +4,6 @@ from nc_polynomial import NCPolynomial
 from itertools import product
 
 
-
 @pytest.fixture
 def setup_letters():
     return [Word(l) for l in "abc"]
@@ -152,6 +151,7 @@ def test_is_lyndon(word_list):
     for word in word_list:
         w = Word(word)
         assert w.is_lyndon() == (word in lyndon_word_list)
+
 
 def test_standard_factorization_for_lyndon():
     factorizations = {

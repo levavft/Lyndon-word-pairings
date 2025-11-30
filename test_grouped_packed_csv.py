@@ -29,7 +29,7 @@ def load_csv(path):
         return [[cell.strip() for cell in row] for row in reader if any(cell.strip() for cell in row)]
 
 
-def normalize_matrix(matrix):
+def normalize_matrix(matrix, inc_non_int=True):
     """Convert all numeric-looking strings to ints for reliable comparison."""
     norm = []
     for row in matrix:
@@ -38,7 +38,8 @@ def normalize_matrix(matrix):
             try:
                 norm_row.append(int(val))
             except ValueError:
-                norm_row.append(val)
+                if inc_non_int:
+                    norm_row.append(val)
         norm.append(norm_row)
     return norm
 
@@ -112,8 +113,8 @@ def test_generated_csv_content_matches_reference():
 def get_maximal_value_of_dir(path):
     M = 0
     for filename in os.listdir(path):
-        lst = normalize_matrix(load_csv(path + "\\" + filename))
-        m = max(abs(max(l)) for l in lst if len(l) > 0)
+        lst = normalize_matrix(load_csv(path + "\\" + filename), False)
+        m = max(max(abs(t) for t in l) for l in lst if len(l) > 0)
         if m > M:
             M = m
     return M
