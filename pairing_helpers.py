@@ -54,6 +54,7 @@ def _lyndon_words_upto_duval(n, packed=True):
             w.pop()
     return words
 
+
 def word_signature(w: Word) -> str:
     """Signature for grouping by multiset of letters."""
     return "".join(sorted(repr(w)))
