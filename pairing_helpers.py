@@ -37,23 +37,21 @@ def _lyndon_words_upto(n, packed=True):
     # TODO - use duval's algorithm instead...
     return [w for w in all_words_upto_length(n, packed) if w.is_lyndon()]
 
+
 def _lyndon_words_upto_duval(n, packed=True):
     """Return all Lyndon words of length ≤ n in the alphabet of size n (optionally only packed ones)."""
     words = []
     w = [-1]  # set up for first increment
     while w:
         w[-1] += 1  # increment the last non-z symbol
-        words.append(tuple(w))
+        candidate = Word(tuple(w))
+        if not packed or candidate == candidate.packed():
+            words.append(candidate)
         m = len(w)
         while len(w) < n:  # repeat word to fill exactly n syms
             w.append(w[-m])
         while w and w[-1] == n - 1:  # delete trailing z's
             w.pop()
-        if packed and w[0] > 0:
-            break
-    words = [Word(w) for w in words]
-    if packed:
-        words = [w for w in words if w == w.packed()]
     return words
 
 def word_signature(w: Word) -> str:
