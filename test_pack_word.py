@@ -11,6 +11,8 @@ from word import Word
         ("cba", "cba"),     # descending order
         ("bac", "bac"),     # permutation pattern preserved
         ("bdb", "aba"),     # letters b<d → a<b → pattern aba
+        ("abac", "abac"),
+        ("abad", "abac"),
     ],
 )
 def test_pack_word_expected_output(input_word, expected):
