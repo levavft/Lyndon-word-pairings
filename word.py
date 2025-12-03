@@ -77,32 +77,6 @@ class Word:
                 return u, v
 
         raise Exception("Unexpected path in code reached")
-    # ---------- Standard Lyndon factorization for arbitrary word ----------
-
-    def lyndon_factorization(self):
-        """
-        Chen-Fox-Lyndon factorization: write w = w1 w2 ... wk where
-        each wi is Lyndon and w1 >= w2 >= ... >= wk.
-        """
-        if not self.letters:
-            return []
-        factors = []
-        n = len(self.letters)
-        i = 0
-        while i < n:
-            j = i + 1
-            k = i
-            while j < n and self.letters[k] <= self.letters[j]:
-                if self.letters[k] < self.letters[j]:
-                    k = i
-                else:
-                    k += 1
-                j += 1
-            l = i
-            while i <= k:
-                factors.append(Word(self.letters[l:l + j - k]))
-                i += j - k
-        return factors
 
     # ---------- Standard bracketing ----------
 

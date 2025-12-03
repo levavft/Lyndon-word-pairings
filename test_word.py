@@ -1,6 +1,5 @@
 import pytest
 from word import Word
-from nc_polynomial import NCPolynomial
 from itertools import product
 
 
@@ -173,17 +172,6 @@ def test_standard_factorization_for_lyndon():
         assert isinstance(factorization[1], Word)
         assert factorization[1].is_lyndon()
         assert tuple(map(repr, factorization)) == fac
-
-
-def test_lyndon_factorization_general():
-    # TODO - DO I CARE ABOUT THIS TEST/ THIS FUNCTIONALITY?
-    w = Word("aba")
-    factors = w.lyndon_factorization()
-    assert [repr(f) for f in factors] == ["ab", "a"]
-
-    w2 = Word("baba")
-    factors = w2.lyndon_factorization()
-    assert [repr(f) for f in factors] == ["b", "ab", "a"]
 
 
 def test_standard_bracketing():
