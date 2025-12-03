@@ -16,7 +16,7 @@ def all_words_upto_length(n, packed=True):
     # TODO - there is clearly a more efficient algorithm
     seen = set()
     for k in range(1, n + 1):
-        for letters in product(Config.alphabet, repeat=k):
+        for letters in product(Config.alphabet[:n], repeat=k):
             w = Word("".join(letters))
             if packed:
                 w = w.packed()
