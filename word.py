@@ -66,14 +66,11 @@ class Word:
     def standard_factorization(self):
         """
         Return (u, v) such that w = uv, v is the longest proper Lyndon suffix.
-        If the word itself is not Lyndon, return None.
         """
-        if not self.is_lyndon():
-            return None
         for i in range(1, len(self.letters)):
-            u = Word(self.letters[:i])
             v = Word(self.letters[i:])
             if v.is_lyndon():
+                u = Word(self.letters[:i])
                 return u, v
 
         raise Exception("Unexpected path in code reached")

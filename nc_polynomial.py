@@ -132,8 +132,6 @@ class NCPolynomial:
         """Create P_w for a Lyndon word w."""
         if not isinstance(word, Word):
             raise TypeError("Expected a Word instance")
-        if not word.is_lyndon():
-            raise ValueError(f"Expected a Lyndon word, '{word}' is not Lyndon.")
 
         if len(word) == 1:
             return NCPolynomial.from_word(word)
