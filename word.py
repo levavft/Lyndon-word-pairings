@@ -65,6 +65,10 @@ class Word:
         """Signature for grouping by multiset of letters."""
         return "".join(sorted(self.__repr__()))
 
+    def to_typst(self):
+        internal = " ".join(self.__repr__())
+        return f"$({internal})$"
+
     # ---------- Lyndon factorization ----------
 
     def standard_factorization(self):

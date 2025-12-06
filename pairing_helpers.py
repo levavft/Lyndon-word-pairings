@@ -31,6 +31,20 @@ class PairingMatrix:
                 writer.writerow([repr(v)] + row)
         print(f"✅ CSV written to {filename}")
 
+    def to_typst(self):
+        tabs = "\t"
+        internal = ""
+        for v, row in zip(self.words, self.matrix):
+            internal += f"{tabs}{v.to_typst()}, {", ".join([f"${el}$" for el in row])},\n"
+        return \
+f"""
+#table(
+    columns: {len(self.words) + 1}, 
+    table.header([$chevron.l v, w chevron.r$], {", ".join([w.to_typst() for w in self.words])}),
+{internal})    
+"""
+
+
 
 def write_pairing_latex(filename, words, caption=None):
     """Write a LaTeX table mirroring the pairing matrix."""
