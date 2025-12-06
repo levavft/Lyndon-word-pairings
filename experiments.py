@@ -1,4 +1,3 @@
-from nc_polynomial import NCPolynomial
 from word import Word
 from pairing_helpers import *
 

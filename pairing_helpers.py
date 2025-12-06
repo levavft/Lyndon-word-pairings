@@ -1,51 +1,7 @@
 # pairing_helpers.py
 import os
 import csv
-from collections import defaultdict
-from word import Word
 from nc_polynomial import NCPolynomial
-
-# ------------------------------
-
-def lyndon_words_upto(n, packed=True):
-    return _lyndon_words_upto_duval(n, packed)
-
-
-def _lyndon_words_upto(n, packed=True):
-    """Return all Lyndon words of length ≤ n (optionally only packed ones)."""
-    # TODO - use duval's algorithm instead...
-    return [w for w in all_words_upto_length(n, packed) if w.is_lyndon()]
-
-
-def _lyndon_words_upto_duval(n, packed=True):
-    """Return all Lyndon words of length ≤ n in the alphabet of size n (optionally only packed ones)."""
-    words = []
-    w = [-1]  # set up for first increment
-    while w:
-        w[-1] += 1  # increment the last non-z symbol
-        candidate = Word(tuple(w))
-        if not packed or candidate == candidate.packed():
-            words.append(candidate)
-        m = len(w)
-        while len(w) < n:  # repeat word to fill exactly n syms
-            w.append(w[-m])
-        while w and w[-1] == n - 1:  # delete trailing z's
-            w.pop()
-    return words
-
-
-def word_signature(w: Word) -> str:
-    """Signature for grouping by multiset of letters."""
-    return "".join(sorted(repr(w)))
-
-
-def grouped_lyndon_words(n, packed=True):
-    """Group Lyndon words by permutation equivalence."""
-    groups = defaultdict(list)
-    for w in lyndon_words_upto(n, packed):
-        groups[word_signature(w)].append(w)
-    return dict(groups)
-
 
 # ------------------------------
 # Output utilities

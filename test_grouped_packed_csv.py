@@ -1,7 +1,6 @@
 import os
 import csv
 import pytest
-from pairing_helpers import grouped_lyndon_words, write_pairing_csv
 
 REFERENCE_DIR = "reference_pairings"   # hand-computed CSVs
 OUT_DIR = "pairings"

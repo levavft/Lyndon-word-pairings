@@ -1,5 +1,6 @@
 from config import Config
 from itertools import product
+from collections import defaultdict
 
 
 class Word:
@@ -59,6 +60,10 @@ class Word:
 
     def to_tuple(self):
         return self.letters
+
+    def signature(self):
+        """Signature for grouping by multiset of letters."""
+        return "".join(sorted(self.__repr__()))
 
     # ---------- Lyndon factorization ----------
 
@@ -133,3 +138,32 @@ class Word:
                         continue
                     seen.add(t)
                 yield w
+
+    @staticmethod
+    def lyndon_words_upto(n, packed=True):
+        return Word._lyndon_words_upto_duval(n, packed)
+
+    @staticmethod
+    def _lyndon_words_upto_duval(n, packed=True):
+        """Return all Lyndon words of length ≤ n in the alphabet of size n (optionally only packed ones)."""
+        words = []
+        w = [-1]  # set up for first increment
+        while w:
+            w[-1] += 1  # increment the last non-z symbol
+            candidate = Word(tuple(w))
+            if not packed or candidate == candidate.packed():
+                words.append(candidate)
+            m = len(w)
+            while len(w) < n:  # repeat word to fill exactly n syms
+                w.append(w[-m])
+            while w and w[-1] == n - 1:  # delete trailing z's
+                w.pop()
+        return words
+
+    @staticmethod
+    def grouped_lyndon_words(n, packed=True):
+        """Group Lyndon words by permutation equivalence."""
+        groups = defaultdict(list)
+        for w in Word.lyndon_words_upto(n, packed):
+            groups[w.signature()].append(w)
+        return dict(groups)

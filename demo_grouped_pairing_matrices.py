@@ -1,12 +1,13 @@
 # demo_grouped_pairing_matrices.py
 import os
-from pairing_helpers import grouped_lyndon_words, write_pairing_csv, write_pairing_latex, ensure_dir
+from pairing_helpers import write_pairing_csv, write_pairing_latex, ensure_dir
 from datetime import datetime
+from word import Word
 
 def main(n=5, outdir="pairings_n=5"):
     now = datetime.now()
     ensure_dir(outdir)
-    groups = grouped_lyndon_words(n)
+    groups = Word.grouped_lyndon_words(n)
 
     for sig, words in groups.items():
         base = f"group_{sig}"
