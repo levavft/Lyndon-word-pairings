@@ -1,4 +1,5 @@
 from config import Config
+from itertools import product
 
 
 class Word:
@@ -59,8 +60,6 @@ class Word:
     def to_tuple(self):
         return self.letters
 
-
-
     # ---------- Lyndon factorization ----------
 
     def standard_factorization(self):
@@ -91,7 +90,6 @@ class Word:
         u, v = self.standard_factorization()
         return u.standard_bracketing(), v.standard_bracketing()
 
-
     # ---------- Packing -------------------
 
     def packed(self):
@@ -116,3 +114,22 @@ class Word:
         packed_indices = tuple(rank_map[i] for i in self.letters)
         # Generate a consistent alphabet of the right size
         return Word(packed_indices)
+
+    # ---------- Static methods --------------
+
+    @staticmethod
+    def all_words_upto_length(n, packed=True):
+        """Generate all words of length ≤ n (optionally only packed words)."""
+        # TODO - there is clearly a more efficient algorithm
+        seen = set()
+        for k in range(1, n + 1):
+            for letters in product(Config.alphabet[:n], repeat=k):
+                w = Word("".join(letters))
+                if packed:
+                    w = w.packed()
+                if packed:
+                    t = w.to_tuple()
+                    if t in seen:
+                        continue
+                    seen.add(t)
+                yield w

@@ -1,32 +1,11 @@
 # pairing_helpers.py
 import os
 import csv
-from itertools import product
 from collections import defaultdict
 from word import Word
 from nc_polynomial import NCPolynomial
-from config import Config
 
 # ------------------------------
-
-
-
-def all_words_upto_length(n, packed=True):
-    """Generate all words of length ≤ n (optionally only packed words)."""
-    # TODO - there is clearly a more efficient algorithm
-    seen = set()
-    for k in range(1, n + 1):
-        for letters in product(Config.alphabet[:n], repeat=k):
-            w = Word("".join(letters))
-            if packed:
-                w = w.packed()
-            if packed:
-                t = w.to_tuple()
-                if t in seen:
-                    continue
-                seen.add(t)
-            yield w
-
 
 def lyndon_words_upto(n, packed=True):
     return _lyndon_words_upto_duval(n, packed)

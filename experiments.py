@@ -18,8 +18,8 @@ def find_maximal_abs_value_of_coefficient_of_P(words):
 
 
 def main():
-    n = 8
-    words = list(all_words_upto_length(n, True))
+    n = 5
+    words = list(Word.all_words_upto_length(n, True))
     # words = lyndon_words_upto(n, True)  # need to add a Lyndon only option to find_.... for this to make sense...
     print(find_maximal_abs_value_of_coefficient_of_P(words))
 
