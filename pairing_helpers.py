@@ -7,19 +7,29 @@ from nc_polynomial import NCPolynomial
 # Output utilities
 # ------------------------------
 
-def write_pairing_csv(filename, words):
-    """Write a CSV pairing matrix for the given list of Word objects."""
-    header = [""] + [repr(w) for w in words]
-    with open(filename, "w", newline="") as f:
-        writer = csv.writer(f)
-        writer.writerow(header)
-        for v in words:
-            row = [repr(v)]
+class PairingMatrix:
+    def __init__(self, words):
+        self.words = words
+        self.matrix = self._compute_matrix()
+
+    def _compute_matrix(self):
+        rows = []
+        for v in self.words:
+            row = []
             pv = NCPolynomial.P(v)
-            for w in words:
+            for w in self.words:
                 row.append(pv.get_coefficient(w))
-            writer.writerow(row)
-    print(f"✅ CSV written to {filename}")
+            rows.append(row)
+        return rows
+
+    def write_csv(self, filename, cutify = False):
+        with open(filename, "w", newline="") as f:
+            writer = csv.writer(f)
+            string = "<v, w>" if cutify else ""
+            writer.writerow([string] + [repr(w) for w in self.words])
+            for v, row in zip(self.words, self.matrix):
+                writer.writerow([repr(v)] + row)
+        print(f"✅ CSV written to {filename}")
 
 
 def write_pairing_latex(filename, words, caption=None):

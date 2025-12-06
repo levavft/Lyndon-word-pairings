@@ -3,7 +3,7 @@ import csv
 import pytest
 
 REFERENCE_DIR = "reference_pairings"   # hand-computed CSVs
-OUT_DIR = "pairings"
+OUT_DIR = "pairings_n=4"
 
 
 # @pytest.fixture(scope="module")

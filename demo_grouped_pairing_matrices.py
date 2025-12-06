@@ -1,10 +1,10 @@
 # demo_grouped_pairing_matrices.py
 import os
-from pairing_helpers import write_pairing_csv, write_pairing_latex, ensure_dir
+from pairing_helpers import PairingMatrix, write_pairing_latex, ensure_dir
 from datetime import datetime
 from word import Word
 
-def main(n=5, outdir="pairings_n=5"):
+def main(n=4, outdir="pairings_n=4"):
     now = datetime.now()
     ensure_dir(outdir)
     groups = Word.grouped_lyndon_words(n)
@@ -15,7 +15,7 @@ def main(n=5, outdir="pairings_n=5"):
         # texfile = os.path.join(outdir, base + ".tex")
 
         # caption = f"Pairing matrix for Lyndon words with signature {sig} (alphabet {alphabet})"
-        write_pairing_csv(csvfile, words)
+        PairingMatrix(words).write_csv(csvfile)
         # write_pairing_latex(texfile, words, caption)
 
     print(f"✅ Generated {len(groups)} groups in '{outdir}/'")
