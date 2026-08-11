@@ -14,6 +14,9 @@ class Word:
         if isinstance(letters, str):
             # Convert string to integer indices (a→0, b→1, etc.)
             self.letters = tuple(self.alphabet.index(ch) for ch in letters)
+        elif isinstance(letters, int):
+            # Convert an integer to indices. (1->0, 2->1, etc. For each digit)
+            self.letters = tuple(int(d)-1 for d in str(letters))
         else:
             self.letters = tuple(letters)
 
@@ -53,7 +56,8 @@ class Word:
             yield self.letters[i:] + self.letters[:i]
 
     def is_lyndon(self):
-        """Check if the word is Lyndon (strictly smaller than all its rotations)."""
+        """Check if the word is Lyndon (non-empty and strictly smaller than all its non-trivial rotations)."""
+        """TODO - consider using 'smaller than all of its non-trivial suffixes' instead. Is probably much faster."""
         if not self.letters:
             return False
         return all(self.letters < rot for rot in self._rotations())
@@ -124,6 +128,9 @@ class Word:
         # Generate a consistent alphabet of the right size
         return Word(packed_indices)
 
+    def is_packed(self):
+        s = set(self.letters)
+        return len(s) - 1 == max(s)
     # ---------- Static methods --------------
 
     @staticmethod
