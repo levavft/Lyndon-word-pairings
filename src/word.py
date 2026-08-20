@@ -56,8 +56,13 @@ class Word:
             yield self.letters[i:] + self.letters[:i]
 
     def is_lyndon(self):
-        """Check if the word is Lyndon (non-empty and strictly smaller than all its non-trivial rotations)."""
-        """TODO - consider using 'smaller than all of its non-trivial suffixes' instead. Is probably much faster."""
+        """
+        True iff the word is Lyndon: nonempty and strictly lexicographically
+        smaller than all of its nontrivial rotations.
+
+        TODO: consider the equivalent "smaller than all nontrivial suffixes"
+        characterization, which is probably faster.
+        """
         if not self.letters:
             return False
         return all(self.letters < rot for rot in self._rotations())
@@ -77,26 +82,34 @@ class Word:
 
     def standard_factorization(self):
         """
-        Return (u, v) such that w = uv, v is the longest proper Lyndon suffix.
+        Return (u, v) such that w = uv and v is the longest proper Lyndon suffix.
+
+        Defined for every word of length greater than 1 (not only Lyndon words).
+        Every such word has at least one proper Lyndon suffix (its last letter).
         """
-        for i in range(1, len(self.letters)):
+        n = len(self.letters)
+        if n <= 1:
+            raise ValueError("standard_factorization requires a word of length > 1")
+        for i in range(1, n):
             v = Word(self.letters[i:])
             if v.is_lyndon():
                 u = Word(self.letters[:i])
                 return u, v
-
-        raise Exception("Unexpected path in code reached")
+        raise ValueError(  # pragma: no cover — every len>1 word has a Lyndon last letter
+            f"standard_factorization: no proper Lyndon suffix (word={self!r}). "
+            "This is mathematically impossible; investigate."
+        )
 
     # ---------- Standard bracketing ----------
 
     def standard_bracketing(self):
         """
-        Return the standard bracketing [w] as an NCPolynomial.
+        Return the standard bracketing of this word as a nested tuple of Words
+        (letters are leaves). Defined for every nonempty word via recursive
+        longest-proper-Lyndon-suffix factorization, not only for Lyndon words.
         """
-
-        if not self.is_lyndon():
-            return None
-
+        if len(self.letters) == 0:
+            raise ValueError("standard_bracketing requires a nonempty word")
         if len(self.letters) == 1:
             return self
 
@@ -125,25 +138,43 @@ class Word:
         rank_map = {letter: i for i, letter in enumerate(distinct_sorted)}
         # Apply mapping to get packed indices
         packed_indices = tuple(rank_map[i] for i in self.letters)
-        # Generate a consistent alphabet of the right size
         return Word(packed_indices)
 
     def is_packed(self):
+        """
+        True iff the letters form {0, 1, ..., m-1} for m = number of distinct
+        letters. The empty word is considered packed.
+        """
+        if not self.letters:
+            return True
         s = set(self.letters)
-        return len(s) - 1 == max(s)
+        return max(s) == len(s) - 1
     # ---------- Static methods --------------
 
     @staticmethod
-    def all_words_upto_length(n, packed=True):
-        """Generate all words of length ≤ n (optionally only packed words)."""
+    def all_words_upto_length(n, packed=True, k=None, *, include_empty=False):
+        """
+        Generate all words of length ≤ n over an alphabet of size k.
+
+        If k is omitted, it defaults to n (the usual thesis case). Optionally
+        restrict to packed (tassé) words, deduplicated by letter tuple.
+        """
+        if k is None:
+            k = n
+        if n < 0:
+            raise ValueError("n must be non-negative")
+        if k < 0:
+            raise ValueError("alphabet size k must be non-negative")
+
         # TODO - there is clearly a more efficient algorithm
         seen = set()
-        for k in range(1, n + 1):
-            for letters in product(Config.alphabet[:n], repeat=k):
+        if include_empty:
+            yield Word(())
+        for length in range(1, n + 1):
+            for letters in product(Config.alphabet[:k], repeat=length):
                 w = Word("".join(letters))
                 if packed:
                     w = w.packed()
-                if packed:
                     t = w.to_tuple()
                     if t in seen:
                         continue
@@ -178,3 +209,9 @@ class Word:
         for w in Word.lyndon_words_upto(n, packed):
             groups[w.signature()].append(w)
         return dict(groups)
+
+
+if __name__ == "__main__":  # pragma: no cover
+    word = Word(341)
+    print(word.standard_factorization())
+    print(word.standard_bracketing())

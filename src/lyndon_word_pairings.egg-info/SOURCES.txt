@@ -13,3 +13,4 @@ tests/test_grouped_packed_csv.py
 tests/test_nc_polynomial.py
 tests/test_pack_word.py
 tests/test_word.py
+tests/test_word_counts.py

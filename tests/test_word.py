@@ -1,121 +1,16 @@
 import pytest
 from word import Word
-from itertools import product
+from oracles.word_oracle import (
+    is_lyndon as oracle_is_lyndon,
+    standard_factorization as oracle_standard_factorization,
+    standard_bracketing as oracle_standard_bracketing,
+    all_words_upto_length,
+)
 
 
 @pytest.fixture
 def setup_letters():
     return [Word(l) for l in "abc"]
-
-
-@pytest.fixture
-def word_list():
-    letters = "abcd"
-    word_list = list(map("".join, product(letters, repeat=4)))
-    lyndon_word_list = {"a", "b", "c", "d",
-                        "ab", "ac", "ad", "bc", "bd", "cd",
-                        "aab", "aac", "aad", "abb", "abc", "abd", "acb", "acc", "acd", "adb", "adc", "add",
-                        "bbc", "bbd", "bcc", "bcd", "bdc", "bdd",
-                        "ccd", "cdd",
-                        "aaab", "aaac", "aaad", "aabb", "aabc", "aabd", "aacb", "aacc", "aacd", "aadb", "aadc", "aadd",
-                        "abac", "abad", "abbb", "abbc", "abbd", "abcb", "abcc", "abcd", "abdb", "abdc", "abdd",
-                        "acad", "acbb", "acbc", "acbd", "accb", "accc", "accd", "acdb", "acdc", "acdd",
-                        "adbb", "adbc", "adbd", "adcb", "adcc", "adcd", "addb", "addc", "addd",
-                        "bbbc", "bbbd", "bbcc", "bbcd", "bbdc", "bbdd",
-                        "bcbd", "bccc", "bccd", "bcdc", "bcdd", "bdcc", "bdcd", "bddc", "bddd", "cccd", "ccdd", "cddd"
-                        }
-    # lyndon_word_factorizations = {"a": ("", "a"),
-    #                               "b": ("", "b"),
-    #                               "c": ("", "c"),
-    #                               "d": ("", "d"),
-    #                               "ab": ("a", "b"),
-    #                               "ac",
-    #                               "ad",
-    #                               "bc",
-    #                               "bd",
-    #                               "cd",
-    #                               "aab",
-    #                               "aac",
-    #                               "aad",
-    #                               "abb",
-    #                               "abc",
-    #                               "abd",
-    #                               "acb",
-    #                               "acc",
-    #                               "acd",
-    #                               "adb",
-    #                               "adc",
-    #                               "add",
-    #                               "bbc",
-    #                               "bbd",
-    #                               "bcc",
-    #                               "bcd",
-    #                               "bdc",
-    #                               "bdd",
-    #                               "ccd",
-    #                               "cdd",
-    #                               "aaab",
-    #                               "aaac",
-    #                               "aaad",
-    #                               "aabb",
-    #                               "aabc",
-    #                               "aabd",
-    #                               "aacb",
-    #                               "aacc",
-    #                               "aacd",
-    #                               "aadb",
-    #                               "aadc",
-    #                               "aadd",
-    #                               "abac",
-    #                               "abad",
-    #                               "abbb",
-    #                               "abbc",
-    #                               "abbd",
-    #                               "abcb",
-    #                               "abcc",
-    #                               "abcd",
-    #                               "abdb",
-    #                               "abdc",
-    #                               "abdd",
-    #                               "acad",
-    #                               "acbb",
-    #                               "acbc",
-    #                               "acbd",
-    #                               "accb",
-    #                               "accc",
-    #                               "accd",
-    #                               "acdb",
-    #                               "acdc",
-    #                               "acdd",
-    #                               "adbb",
-    #                               "adbc",
-    #                               "adbd",
-    #                               "adcb",
-    #                               "adcc",
-    #                               "adcd",
-    #                               "addb",
-    #                               "addc",
-    #                               "addd",
-    #                               "bbbc",
-    #                               "bbbd",
-    #                               "bbcc",
-    #                               "bbcd",
-    #                               "bbdc",
-    #                               "bbdd",
-    #                               "bcbd",
-    #                               "bccc",
-    #                               "bccd",
-    #                               "bcdc",
-    #                               "bcdd",
-    #                               "bdcc",
-    #                               "bdcd",
-    #                               "bddc",
-    #                               "bddd",
-    #                               "cccd",
-    #                               "ccdd",
-    #                               "cddd"
-    #                     }
-    return word_list, lyndon_word_list
 
 
 def test_word_basic_repr(setup_letters):
@@ -143,13 +38,25 @@ def test_is_lyndon_basic(setup_letters):
     assert not Word("ba").is_lyndon()
     assert Word("abc").is_lyndon()
     assert not Word("aba").is_lyndon()
+    assert not Word(()).is_lyndon()
 
 
-def test_is_lyndon(word_list):
-    word_list, lyndon_word_list = word_list
-    for word in word_list:
-        w = Word(word)
-        assert w.is_lyndon() == (word in lyndon_word_list)
+def test_empty_is_packed_and_packed():
+    empty = Word(())
+    assert empty.is_packed()
+    assert empty.packed() == empty
+
+
+def test_standard_factorization_rejects_short_words():
+    with pytest.raises(ValueError, match="length > 1"):
+        Word(()).standard_factorization()
+    with pytest.raises(ValueError, match="length > 1"):
+        Word("a").standard_factorization()
+
+
+def test_standard_bracketing_rejects_empty():
+    with pytest.raises(ValueError, match="nonempty"):
+        Word(()).standard_bracketing()
 
 
 def test_standard_factorization_for_lyndon():
@@ -161,11 +68,10 @@ def test_standard_factorization_for_lyndon():
         "acb": ("ac", "b"),
         "abcd": ("a", "bcd"),
         "accd": ("a", "ccd"),
-        "acbc": ("ac", "bc")
+        "acbc": ("ac", "bc"),
     }
 
     for word, fac in factorizations.items():
-        print(word, fac)
         w = Word(word)
         factorization = w.standard_factorization()
         assert isinstance(factorization[0], Word)
@@ -182,21 +88,52 @@ def test_standard_bracketing():
             else:
                 yield tuple(wordify(obj))
 
-
     bracketings = {
         "ab": ("a", "b"),
         "ac": ("a", "c"),
         "ad": ("a", "d"),
         "cd": ("c", "d"),
+        "ba": ("b", "a"),  # non-Lyndon
+        "aba": (("a", "b"), "a"),  # non-Lyndon
         "abb": (("a", "b"), "b"),
         "acb": (("a", "c"), "b"),
         "bcd": ("b", ("c", "d")),
         "abcd": ("a", ("b", ("c", "d"))),
         "accd": ("a", ("c", ("c", "d"))),
-        "acbc": (("a", "c"), ("b", "c"))
+        "acbc": (("a", "c"), ("b", "c")),
     }
 
     for word, br in bracketings.items():
         w = Word(word)
-        bracketing = w.standard_bracketing()
-        assert bracketing == tuple(wordify(br))
+        expected = tuple(wordify(br))
+        assert w.standard_bracketing() == expected
+        assert oracle_standard_bracketing(w) == expected
+
+
+def test_is_lyndon_exhaustive_len_le_4_alphabet_4():
+    for w in all_words_upto_length(4, 4):
+        assert w.is_lyndon() == oracle_is_lyndon(w)
+
+
+def test_standard_factorization_exhaustive_len_le_4_alphabet_4():
+    for w in all_words_upto_length(4, 4):
+        if len(w) <= 1:
+            continue
+
+        expected_u, expected_v = oracle_standard_factorization(w)
+        got_u, got_v = w.standard_factorization()
+
+        assert (got_u, got_v) == (expected_u, expected_v)
+        assert repr(got_u) + repr(got_v) == repr(w)
+        assert oracle_is_lyndon(got_v)
+
+        # v is the longest proper Lyndon suffix: no longer proper suffix is Lyndon
+        split = len(w) - len(expected_v)
+        for i in range(1, split):
+            assert not oracle_is_lyndon(Word(w.letters[i:]))
+
+
+def test_standard_bracketing_exhaustive_len_le_4_alphabet_4():
+    """Bracketing is defined for every nonempty word, not only Lyndon words."""
+    for w in all_words_upto_length(4, 4):
+        assert w.standard_bracketing() == oracle_standard_bracketing(w)

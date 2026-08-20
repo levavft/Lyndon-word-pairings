@@ -5,3 +5,5 @@ Summary: Tools for Lyndon words and pairing matrices / NC polynomials
 Requires-Python: >=3.10
 Provides-Extra: dev
 Requires-Dist: pytest; extra == "dev"
+Requires-Dist: pytest-cov; extra == "dev"
+Requires-Dist: sympy; extra == "dev"
