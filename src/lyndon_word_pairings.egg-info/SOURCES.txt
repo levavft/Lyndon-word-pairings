@@ -1,0 +1,15 @@
+README.md
+pyproject.toml
+src/config.py
+src/nc_polynomial.py
+src/pairing_helpers.py
+src/word.py
+src/lyndon_word_pairings.egg-info/PKG-INFO
+src/lyndon_word_pairings.egg-info/SOURCES.txt
+src/lyndon_word_pairings.egg-info/dependency_links.txt
+src/lyndon_word_pairings.egg-info/requires.txt
+src/lyndon_word_pairings.egg-info/top_level.txt
+tests/test_grouped_packed_csv.py
+tests/test_nc_polynomial.py
+tests/test_pack_word.py
+tests/test_word.py

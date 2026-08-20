@@ -1,0 +1,180 @@
+from config import Config
+from itertools import product
+from collections import defaultdict
+
+
+class Word:
+    """Immutable word over a finite alphabet, represented as a tuple of ints."""
+
+    __slots__ = ('letters', 'alphabet')
+
+    def __init__(self, letters=()):
+        self.alphabet = Config.alphabet
+        
+        if isinstance(letters, str):
+            # Convert string to integer indices (a→0, b→1, etc.)
+            self.letters = tuple(self.alphabet.index(ch) for ch in letters)
+        elif isinstance(letters, int):
+            # Convert an integer to indices. (1->0, 2->1, etc. For each digit)
+            self.letters = tuple(int(d)-1 for d in str(letters))
+        else:
+            self.letters = tuple(letters)
+
+    def __repr__(self):
+        if not self.letters:
+            return "ε"  # epsilon for empty word
+        return ''.join(self.alphabet[i] for i in self.letters)
+
+    def __len__(self):
+        return len(self.letters)
+
+    def __eq__(self, other):
+        if not isinstance(other, Word):
+            return False
+        return self.letters == other.letters
+
+    def __lt__(self, other):
+        return self.letters < other.letters
+
+    def __add__(self, other):
+        """Concatenate two words."""
+        if isinstance(other, Word):
+            return Word(self.letters + other.letters)
+        raise TypeError("Word can only be concatenated with Word")
+
+    def __radd__(self, other):
+        """Concatenate two words."""
+        if isinstance(other, Word):
+            return Word(other.letters + self.letters)
+        raise TypeError("Word can only be concatenated with Word")
+
+    def _rotations(self, include_trivial=False):
+        """All nontrivial rotations of the word."""
+        if include_trivial:
+            yield self.letters
+        for i in range(1, len(self.letters)):
+            yield self.letters[i:] + self.letters[:i]
+
+    def is_lyndon(self):
+        """Check if the word is Lyndon (non-empty and strictly smaller than all its non-trivial rotations)."""
+        """TODO - consider using 'smaller than all of its non-trivial suffixes' instead. Is probably much faster."""
+        if not self.letters:
+            return False
+        return all(self.letters < rot for rot in self._rotations())
+
+    def to_tuple(self):
+        return self.letters
+
+    def signature(self):
+        """Signature for grouping by multiset of letters."""
+        return "".join(sorted(self.__repr__()))
+
+    def to_typst(self):
+        internal = " ".join(self.__repr__())
+        return f"$({internal})$"
+
+    # ---------- Lyndon factorization ----------
+
+    def standard_factorization(self):
+        """
+        Return (u, v) such that w = uv, v is the longest proper Lyndon suffix.
+        """
+        for i in range(1, len(self.letters)):
+            v = Word(self.letters[i:])
+            if v.is_lyndon():
+                u = Word(self.letters[:i])
+                return u, v
+
+        raise Exception("Unexpected path in code reached")
+
+    # ---------- Standard bracketing ----------
+
+    def standard_bracketing(self):
+        """
+        Return the standard bracketing [w] as an NCPolynomial.
+        """
+
+        if not self.is_lyndon():
+            return None
+
+        if len(self.letters) == 1:
+            return self
+
+        u, v = self.standard_factorization()
+        return u.standard_bracketing(), v.standard_bracketing()
+
+    # ---------- Packing -------------------
+
+    def packed(self):
+        """
+        Compute the packed (tassé) form of a word, preserving its relative order pattern.
+        That is, relabel distinct letters of the word by 0,1,2,... according to their
+        order in the base alphabet, not the order of first appearance.
+
+        Example (alphabet = a<b<c<d):
+            abc -> abc
+            acb -> acb
+            bda -> bcb -> abc (same structure)
+        """
+        if not self.letters:
+            return Word(())
+
+        # Extract the set of letters that appear, sorted by the base alphabet order
+        distinct_sorted = sorted(set(self.letters))
+        # Map each letter to its rank in that sorted set
+        rank_map = {letter: i for i, letter in enumerate(distinct_sorted)}
+        # Apply mapping to get packed indices
+        packed_indices = tuple(rank_map[i] for i in self.letters)
+        # Generate a consistent alphabet of the right size
+        return Word(packed_indices)
+
+    def is_packed(self):
+        s = set(self.letters)
+        return len(s) - 1 == max(s)
+    # ---------- Static methods --------------
+
+    @staticmethod
+    def all_words_upto_length(n, packed=True):
+        """Generate all words of length ≤ n (optionally only packed words)."""
+        # TODO - there is clearly a more efficient algorithm
+        seen = set()
+        for k in range(1, n + 1):
+            for letters in product(Config.alphabet[:n], repeat=k):
+                w = Word("".join(letters))
+                if packed:
+                    w = w.packed()
+                if packed:
+                    t = w.to_tuple()
+                    if t in seen:
+                        continue
+                    seen.add(t)
+                yield w
+
+    @staticmethod
+    def lyndon_words_upto(n, packed=True):
+        return Word._lyndon_words_upto_duval(n, packed)
+
+    @staticmethod
+    def _lyndon_words_upto_duval(n, packed=True):
+        """Return all Lyndon words of length ≤ n in the alphabet of size n (optionally only packed ones)."""
+        words = []
+        w = [-1]  # set up for first increment
+        while w:
+            w[-1] += 1  # increment the last non-z symbol
+            candidate = Word(tuple(w))
+            if not packed or candidate == candidate.packed():
+                words.append(candidate)
+            m = len(w)
+            while len(w) < n:  # repeat word to fill exactly n syms
+                w.append(w[-m])
+            while w and w[-1] == n - 1:  # delete trailing z's
+                w.pop()
+        return words
+
+    @staticmethod
+    def grouped_lyndon_words(n, packed=True):
+        """Group Lyndon words by permutation equivalence."""
+        groups = defaultdict(list)
+        for w in Word.lyndon_words_upto(n, packed):
+            groups[w.signature()].append(w)
+        return dict(groups)

@@ -1,0 +1,7 @@
+,abcd,abdc,acbd,acdb,adbc,adcb
+abcd,1,-1,0,-1,0,1
+abdc,0,1,-1,1,-1,0
+acbd,0,0,1,-1,0,0
+acdb,0,0,0,1,0,-1
+adbc,0,0,0,0,1,-1
+adcb,0,0,0,0,0,1
