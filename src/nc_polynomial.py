@@ -84,6 +84,11 @@ class NCPolynomial:
     def __neg__(self):
         return NCPolynomial({w: -c for w, c in self.terms.items()})
 
+    def __eq__(self, other):
+        if not isinstance(other, NCPolynomial):
+            return NotImplemented
+        return self.terms == other.terms
+
     def __sub__(self, other):
         return self + (-other)
 
@@ -129,7 +134,13 @@ class NCPolynomial:
 
     @staticmethod
     def P(word):
-        """Create P_w for a Lyndon word w."""
+        """Lie polynomial of a nonempty word via nested commutators.
+
+        Recursively uses standard factorization: for |w|=1 return the
+        monomial; otherwise if w = uv then P(w) = [P(u), P(v)] =
+        P(u)P(v) - P(v)P(u). Works for any nonempty word that admits
+        factorization; pairing applications typically use Lyndon words.
+        """
         if not isinstance(word, Word):
             raise TypeError("Expected a Word instance")
 

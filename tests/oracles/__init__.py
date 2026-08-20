@@ -11,6 +11,20 @@ from .word_oracle import (
     all_words_upto_length,
     mobius,
 )
+from .nc_polynomial_oracle import (
+    normalize,
+    add,
+    neg,
+    sub,
+    mul,
+    degree,
+    monomial,
+    from_word,
+    get_coefficient,
+    P,
+    terms_from_str_map,
+    str_map_from_terms,
+)
 
 __all__ = [
     "is_lyndon",
@@ -22,4 +36,16 @@ __all__ = [
     "all_words_of_length",
     "all_words_upto_length",
     "mobius",
+    "normalize",
+    "add",
+    "neg",
+    "sub",
+    "mul",
+    "degree",
+    "monomial",
+    "from_word",
+    "get_coefficient",
+    "P",
+    "terms_from_str_map",
+    "str_map_from_terms",
 ]
