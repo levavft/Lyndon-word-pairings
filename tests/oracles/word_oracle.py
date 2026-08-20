@@ -33,7 +33,7 @@ def packed(w: Word) -> Word:
     Packed (tassé) form: relabel distinct letters by 0,1,2,... according to
     their order in the base alphabet (not order of first appearance).
 
-    Example (alphabet a<b<c<d): bda packs like aba (same relative pattern).
+    Example (alphabet a<b<c<d): bda packs to bca.
     """
     letters = w.letters
     if not letters:

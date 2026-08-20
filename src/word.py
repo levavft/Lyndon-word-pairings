@@ -127,7 +127,7 @@ class Word:
         Example (alphabet = a<b<c<d):
             abc -> abc
             acb -> acb
-            bda -> bcb -> abc (same structure)
+            bda -> bca
         """
         if not self.letters:
             return Word(())

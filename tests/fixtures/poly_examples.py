@@ -47,7 +47,10 @@ POLY_EXAMPLES: tuple[PolyExample, ...] = (
 )
 
 
-# Lyndon words from the word catalog; p_terms from oracle.P (hand-reviewed)
+# Lyndon words from the word catalog.
+# p_terms were dumped from oracle.P then hand-reviewed; they are not an
+# independent derivation (shared factorization bugs would agree with oracle.P).
+# Small hand spot-checks and thesis-verified pairing CSVs are the independent checks.
 PWORD_EXAMPLES: tuple[PWordExample, ...] = (
     PWordExample("a", {"a": 1}),
     PWordExample("b", {"b": 1}),

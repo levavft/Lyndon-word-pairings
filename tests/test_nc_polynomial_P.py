@@ -61,7 +61,8 @@ def test_P_structural_commutator_of_factors(w):
     expected_prod = (pu * pv - pv * pu).terms
     got = NCPolynomial.P(w).terms
 
-    assert got == expected_oracle == expected_prod == oracle_P(w)
+    # Production P(w) equals both [P(u), P(v)] and the oracle expansion.
+    assert got == expected_prod == expected_oracle
 
 
 # ---------- get_coefficient ----------

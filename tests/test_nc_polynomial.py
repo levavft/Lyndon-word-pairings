@@ -6,19 +6,38 @@ from fixtures.poly_examples import POLY_EXAMPLES, PolyExample, as_terms
 from oracles.nc_polynomial_oracle import (
     add as oracle_add,
     mul as oracle_mul,
-    normalize as oracle_normalize,
     degree as oracle_degree,
-    terms_from_str_map,
 )
 
 
-def poly_from_terms_map(terms: dict[str, int]) -> NCPolynomial:
-    """Build an NCPolynomial from a catalog-style str→coeff map."""
-    return NCPolynomial(terms_from_str_map(terms))
-
-
-def poly_from_example(ex: PolyExample) -> NCPolynomial:
-    return poly_from_terms_map(ex.terms)
+def build_poly_example(ex: PolyExample) -> NCPolynomial:
+    """Evaluate the expression implied by each catalog entry (not a terms round-trip)."""
+    a, b, c = NCPolynomial.vars(3)
+    builders = {
+        "zero": lambda: a - a,
+        "a": lambda: a,
+        "b": lambda: b,
+        "ab": lambda: a * b,
+        "ba": lambda: b * a,
+        "ab-ba": lambda: a * b - b * a,
+        "3+ab-ba": lambda: 3 + (a * b - b * a),
+        "3*(ab-ba)": lambda: 3 * (a * b - b * a),
+        "(ab-ba)*2": lambda: (a * b - b * a) * 2,
+        "3*(ab-ba)+2": lambda: 3 * (a * b - b * a) + 2,
+        "2bc": lambda: (a * b + b * c) + (b * c - a * b),
+        "2ab": lambda: (a * b + b * c) - (b * c - a * b),
+        "ab+5": lambda: a * b + 5,
+        "ab-5": lambda: a * b - 5,
+        "5-ab": lambda: 5 - a * b,
+        "constant-5": lambda: (a - a) + 5,
+        "abac": lambda: a * b * a * c,
+    }
+    try:
+        return builders[ex.name]()
+    except KeyError as err:
+        raise AssertionError(
+            f"No expression builder for POLY_EXAMPLES entry {ex.name!r}"
+        ) from err
 
 
 @pytest.fixture
@@ -26,15 +45,13 @@ def setup_vars():
     return NCPolynomial.vars(3)
 
 
-# ---------- Catalog goldens (terms) ----------
+# ---------- Catalog goldens (evaluate expressions) ----------
 
 
 @pytest.mark.parametrize("ex", POLY_EXAMPLES, ids=lambda ex: ex.name)
-def test_poly_example_terms_match_oracle(ex):
-    p = poly_from_example(ex)
-    expected = as_terms(ex)
-    assert p.terms == expected
-    assert oracle_normalize(p.terms) == expected
+def test_poly_example_expression_matches_catalog(ex):
+    p = build_poly_example(ex)
+    assert p.terms == as_terms(ex)
 
 
 # ---------- Repr smoke (readability only; terms remain source of truth) ----------

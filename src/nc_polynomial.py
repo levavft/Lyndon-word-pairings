@@ -17,11 +17,16 @@ class NCPolynomial:
 
     @staticmethod
     def vars(names_or_n=1):
-        """Create a tuple of generator polynomials.
+        """Create a tuple of generator polynomials with indices 0..n-1.
+
+        Generators always use letter indices ``0, 1, ...`` (printed via
+        ``Config.alphabet`` as ``a, b, c, ...``). A string argument only
+        sets the arity (number of whitespace-separated tokens); the token
+        names themselves are ignored.
 
         Examples:
             NCPolynomial.vars(3)          -> (a, b, c)
-            NCPolynomial.vars('x y z')    -> (x, y, z)
+            NCPolynomial.vars('x y z')    -> (a, b, c)  # arity 3; names ignored
         """
         alphabet = Config.alphabet
         if isinstance(names_or_n, int):

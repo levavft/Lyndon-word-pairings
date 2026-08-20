@@ -32,8 +32,8 @@ def test_copy_is_independent():
     assert p.terms[(0,)] == 1
 
 
-def test_vars_int_and_names_ignored_for_indices():
-    # Names only set arity; generator indices are always 0..n-1.
+def test_vars_string_sets_arity_only():
+    """String form of vars() sets arity; token names do not rename generators."""
     a, b, c = NCPolynomial.vars(3)
     assert a.terms == {(0,): 1}
     assert b.terms == {(1,): 1}
@@ -44,6 +44,7 @@ def test_vars_int_and_names_ignored_for_indices():
     assert y.terms == {(1,): 1}
     assert z.terms == {(2,): 1}
     assert (x, y, z) == (a, b, c)
+    assert (repr(x), repr(y), repr(z)) == ("a", "b", "c")
 
 
 def test_from_word_and_P_type_error():

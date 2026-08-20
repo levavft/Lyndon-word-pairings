@@ -9,7 +9,6 @@ from fixtures.poly_examples import (
 )
 from oracles.nc_polynomial_oracle import (
     P as oracle_P,
-    normalize,
     str_map_from_terms,
     terms_from_str_map,
 )
@@ -17,10 +16,8 @@ from oracles.nc_polynomial_oracle import (
 
 @pytest.mark.parametrize("ex", POLY_EXAMPLES, ids=lambda ex: ex.name)
 def test_poly_example_str_map_roundtrip(ex):
+    """Serialization only: str map ↔ terms recovers nonzero catalog entries."""
     terms = terms_from_str_map(ex.terms)
-    assert normalize(terms) == terms
-    assert as_terms(ex) == terms
-    # Round-trip: str map → terms → str map recovers the nonzero catalog
     recovered = str_map_from_terms(terms)
     assert recovered == {k: v for k, v in ex.terms.items() if v != 0}
 
