@@ -6,6 +6,13 @@ from oracles.word_oracle import (
     standard_bracketing as oracle_standard_bracketing,
     all_words_upto_length,
 )
+from fixtures.word_examples import (
+    EXAMPLES,
+    as_word,
+    bracketing_as_words,
+    examples_with_bracketing,
+    examples_with_factorization,
+)
 
 
 @pytest.fixture
@@ -30,15 +37,9 @@ def test_word_comparisons(setup_letters):
     assert not (Word("b") < Word("a"))
 
 
-def test_is_lyndon_basic(setup_letters):
-    a, b, c = setup_letters
-    assert a.is_lyndon()
-    assert b.is_lyndon()
-    assert Word("ab").is_lyndon()
-    assert not Word("ba").is_lyndon()
-    assert Word("abc").is_lyndon()
-    assert not Word("aba").is_lyndon()
-    assert not Word(()).is_lyndon()
+@pytest.mark.parametrize("ex", EXAMPLES, ids=lambda ex: ex.word or "ε")
+def test_is_lyndon_basic(ex):
+    assert as_word(ex).is_lyndon() == ex.is_lyndon
 
 
 def test_empty_is_packed_and_packed():
@@ -59,55 +60,26 @@ def test_standard_bracketing_rejects_empty():
         Word(()).standard_bracketing()
 
 
-def test_standard_factorization_for_lyndon():
-    factorizations = {
-        "ab": ("a", "b"),
-        "ac": ("a", "c"),
-        "ad": ("a", "d"),
-        "abb": ("ab", "b"),
-        "acb": ("ac", "b"),
-        "abcd": ("a", "bcd"),
-        "accd": ("a", "ccd"),
-        "acbc": ("ac", "bc"),
-    }
-
-    for word, fac in factorizations.items():
-        w = Word(word)
-        factorization = w.standard_factorization()
-        assert isinstance(factorization[0], Word)
-        assert isinstance(factorization[1], Word)
-        assert factorization[1].is_lyndon()
-        assert tuple(map(repr, factorization)) == fac
+@pytest.mark.parametrize(
+    "ex", examples_with_factorization(), ids=lambda ex: ex.word
+)
+def test_standard_factorization_from_catalog(ex):
+    w = as_word(ex)
+    factorization = w.standard_factorization()
+    assert isinstance(factorization[0], Word)
+    assert isinstance(factorization[1], Word)
+    assert factorization[1].is_lyndon()
+    assert tuple(map(repr, factorization)) == ex.factorization
 
 
-def test_standard_bracketing():
-    def wordify(tup):
-        for obj in tup:
-            if isinstance(obj, str):
-                yield Word(obj)
-            else:
-                yield tuple(wordify(obj))
-
-    bracketings = {
-        "ab": ("a", "b"),
-        "ac": ("a", "c"),
-        "ad": ("a", "d"),
-        "cd": ("c", "d"),
-        "ba": ("b", "a"),  # non-Lyndon
-        "aba": (("a", "b"), "a"),  # non-Lyndon
-        "abb": (("a", "b"), "b"),
-        "acb": (("a", "c"), "b"),
-        "bcd": ("b", ("c", "d")),
-        "abcd": ("a", ("b", ("c", "d"))),
-        "accd": ("a", ("c", ("c", "d"))),
-        "acbc": (("a", "c"), ("b", "c")),
-    }
-
-    for word, br in bracketings.items():
-        w = Word(word)
-        expected = tuple(wordify(br))
-        assert w.standard_bracketing() == expected
-        assert oracle_standard_bracketing(w) == expected
+@pytest.mark.parametrize(
+    "ex", examples_with_bracketing(), ids=lambda ex: ex.word
+)
+def test_standard_bracketing_from_catalog(ex):
+    w = as_word(ex)
+    expected = bracketing_as_words(ex.bracketing)
+    assert w.standard_bracketing() == expected
+    assert oracle_standard_bracketing(w) == expected
 
 
 def test_is_lyndon_exhaustive_len_le_4_alphabet_4():

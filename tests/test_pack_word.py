@@ -6,35 +6,25 @@ from oracles.word_oracle import (
     is_lyndon as oracle_is_lyndon,
     all_words_upto_length,
 )
+from fixtures.word_examples import EXAMPLES, as_word
 
 
-@pytest.mark.parametrize(
-    "input_word,expected",
-    [
-        ("abc", "abc"),  # already packed
-        ("acb", "acb"),  # distinct letters, preserves order pattern
-        ("bca", "bca"),  # shift in alphabet, still pattern 'abc'
-        ("cba", "cba"),  # descending order
-        ("bac", "bac"),  # permutation pattern preserved
-        ("bdb", "aba"),  # letters b<d → a<b → pattern aba
-        ("abac", "abac"),
-        ("abad", "abac"),
-    ],
-)
-def test_pack_word_expected_output(input_word, expected):
-    """Golden packed forms, also matching the oracle."""
-    w = Word(input_word)
+@pytest.mark.parametrize("ex", EXAMPLES, ids=lambda ex: ex.word or "ε")
+def test_pack_word_expected_output(ex):
+    """Golden packed forms from the catalog."""
+    w = as_word(ex)
     packed = w.packed()
-    assert repr(packed) == expected, f"{input_word} → {repr(packed)} (expected {expected})"
+    got = "" if repr(packed) == "ε" else repr(packed)
+    assert got == ex.packed, f"{ex.word!r} → {got!r} (expected {ex.packed!r})"
     assert packed == oracle_packed(w)
 
 
-@pytest.mark.parametrize("word_str", ["abc", "acb", "bca", "bac", "cab", "cba"])
-def test_packing_preserves_lyndon(word_str):
-    """Packing should not alter Lyndon status for canonical pattern words."""
-    w = Word(word_str)
+@pytest.mark.parametrize("ex", EXAMPLES, ids=lambda ex: ex.word or "ε")
+def test_packing_preserves_lyndon(ex):
+    """Packing should not alter Lyndon status (catalog + oracle)."""
+    w = as_word(ex)
     pw = w.packed()
-    assert w.is_lyndon() == pw.is_lyndon(), f"Lyndon status changed for {word_str} → {repr(pw)}"
+    assert w.is_lyndon() == pw.is_lyndon(), f"Lyndon status changed for {ex.word!r}"
     assert oracle_is_lyndon(w) == oracle_is_lyndon(oracle_packed(w))
 
 
@@ -60,5 +50,4 @@ def test_packing_idempotence(w):
 @pytest.mark.parametrize("w", list(all_words_upto_length(4, 4)))
 def test_packing_preserves_oracle_lyndon(w):
     assert oracle_is_lyndon(w) == oracle_is_lyndon(oracle_packed(w))
-    # Production packed form agrees with oracle on Lyndon status
     assert oracle_is_lyndon(w.packed()) == oracle_is_lyndon(oracle_packed(w))
