@@ -1,70 +1,110 @@
-# pairing_helpers.py
-import os
+"""Pairing matrices for lists of words, with CSV / Typst / LaTeX export.
+
+The entry at row ``v`` and column ``w`` is the pairing
+``⟨v, w⟩ =`` coefficient of ``w`` in ``P(v)``, where ``P`` is
+``NCPolynomial.P``.
+
+LaTeX output uses ``booktabs`` (``\\toprule`` / ``\\midrule`` /
+``\\bottomrule``); include ``\\usepackage{booktabs}`` in the document.
+"""
+
+from __future__ import annotations
+
 import csv
+import io
+import os
+
 from nc_polynomial import NCPolynomial
 
-# ------------------------------
-# Output utilities
-# ------------------------------
 
 class PairingMatrix:
+    """Square pairing matrix over an ordered list of words."""
+
     def __init__(self, words):
-        self.words = words
+        self.words = list(words)
         self.matrix = self._compute_matrix()
 
     def _compute_matrix(self):
         rows = []
         for v in self.words:
-            row = []
             pv = NCPolynomial.P(v)
-            for w in self.words:
-                row.append(pv.get_coefficient(w))
-            rows.append(row)
+            rows.append([pv.get_coefficient(w) for w in self.words])
         return rows
 
-    def write_csv(self, filename, cutify = False):
-        with open(filename, "w", newline="") as f:
-            writer = csv.writer(f)
-            string = "<v, w>" if cutify else ""
-            writer.writerow([string] + [repr(w) for w in self.words])
-            for v, row in zip(self.words, self.matrix):
-                writer.writerow([repr(v)] + row)
-        print(f"✅ CSV written to {filename}")
+    # ---------- String / structured forms ----------
 
-    def to_typst(self):
+    def to_csv_rows(self, *, label: bool = False) -> list[list]:
+        """Return ``[[corner, w...], [v, coeffs...], ...]``.
+
+        If ``label`` is true, the corner cell is ``"<v, w>"``; otherwise empty.
+        """
+        corner = "<v, w>" if label else ""
+        header = [corner] + [repr(w) for w in self.words]
+        body = [[repr(v)] + list(row) for v, row in zip(self.words, self.matrix)]
+        return [header] + body
+
+    def to_csv(self, *, label: bool = False) -> str:
+        """CSV text matching ``write_csv`` (including trailing newline)."""
+        buf = io.StringIO()
+        writer = csv.writer(buf, lineterminator="\n")
+        for row in self.to_csv_rows(label=label):
+            writer.writerow(row)
+        return buf.getvalue()
+
+    def to_typst(self) -> str:
+        """Typst ``#table(...)`` fragment for this pairing matrix."""
         tabs = "\t"
         internal = ""
         for v, row in zip(self.words, self.matrix):
-            internal += f"{tabs}{v.to_typst()}, {", ".join([f"${el}$" for el in row])},\n"
-        return \
-f"""
-#table(
-    columns: {len(self.words) + 1}, 
-    table.header([$chevron.l v, w chevron.r$], {", ".join([w.to_typst() for w in self.words])}),
-{internal})    
-"""
+            coeffs = ", ".join(f"${el}$" for el in row)
+            internal += f"{tabs}{v.to_typst()}, {coeffs},\n"
+        header_words = ", ".join(w.to_typst() for w in self.words)
+        return (
+            f"\n#table(\n"
+            f"    columns: {len(self.words) + 1}, \n"
+            f"    table.header([$chevron.l v, w chevron.r$], {header_words}),\n"
+            f"{internal})    \n"
+        )
 
+    def to_latex(self, *, caption: str | None = None) -> str:
+        """LaTeX ``table``+``tabular`` (needs ``booktabs`` in the preamble)."""
+        caption = caption or "Pairing matrix for Lyndon words"
+        n = len(self.words)
+        lines = [
+            "\\begin{table}[h!]",
+            "\\centering",
+            "\\begin{tabular}{l" + "r" * n + "}",
+            "\\toprule",
+            " & " + " & ".join(f"${repr(w)}$" for w in self.words) + " \\\\",
+            "\\midrule",
+        ]
+        for v, row in zip(self.words, self.matrix):
+            cells = [f"${repr(v)}$"] + [str(c) for c in row]
+            lines.append(" & ".join(cells) + " \\\\")
+        lines.extend(
+            [
+                "\\bottomrule",
+                "\\end{tabular}",
+                f"\\caption{{{caption}}}",
+                "\\end{table}",
+                "",
+            ]
+        )
+        return "\n".join(lines)
 
+    # ---------- Writers (no print side effects) ----------
 
-def write_pairing_latex(filename, words, caption=None):
-    """Write a LaTeX table mirroring the pairing matrix."""
-    caption = caption or "Pairing matrix for Lyndon words"
-    with open(filename, "w") as f:
-        f.write("\\begin{table}[h!]\n\\centering\n")
-        f.write("\\begin{tabular}{l" + "r" * len(words) + "}\n")
-        f.write("\\toprule\n")
-        header = " & " + " & ".join(f"${repr(w)}$" for w in words) + " \\\\\n"
-        f.write(header)
-        f.write("\\midrule\n")
-        for v in words:
-            row = [f"${repr(v)}$"]
-            pv = NCPolynomial.P(v)
-            for w in words:
-                row.append(str(pv.get_coefficient(w)))
-            f.write(" & ".join(row) + " \\\\\n")
-        f.write("\\bottomrule\n\\end{tabular}\n")
-        f.write(f"\\caption{{{{{caption}}}}}\n\\end{{table}}\n")
-    print(f"✅ LaTeX table written to {filename}")
+    def write_csv(self, path, *, label: bool = False) -> None:
+        with open(path, "w", newline="", encoding="utf-8") as f:
+            f.write(self.to_csv(label=label))
+
+    def write_typst(self, path) -> None:
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(self.to_typst())
+
+    def write_latex(self, path, *, caption: str | None = None) -> None:
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(self.to_latex(caption=caption))
 
 
 def ensure_dir(path):

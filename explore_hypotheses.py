@@ -1,5 +1,12 @@
+"""Scratch scripts for probing mathematical hypotheses on generated data.
+
+Use this file to try out conjectures (coefficient bounds, patterns in
+``P_w``, pairing-matrix structure, etc.) against words and polynomials
+produced by the library. It is not part of the test suite.
+"""
+
 from word import Word
-from pairing_helpers import *
+from nc_polynomial import NCPolynomial
 
 
 def find_maximal_abs_value_of_coefficient_of_P(words):
@@ -15,11 +22,10 @@ def find_maximal_abs_value_of_coefficient_of_P(words):
     return max_coeff, max_word, max_poly
 
 
-
 def main():
     n = 5
     words = list(Word.all_words_upto_length(n, True))
-    # words = lyndon_words_upto(n, True)  # need to add a Lyndon only option to find_.... for this to make sense...
+    # words = Word.lyndon_words_upto(n, True)  # Lyndon-only variant
     print(find_maximal_abs_value_of_coefficient_of_P(words))
 
 

@@ -37,22 +37,11 @@ def normalize_matrix(matrix, inc_non_int=True):
     return norm
 
 
-def matrix_as_csv_rows(words, matrix):
-    """Same layout as PairingMatrix.write_csv (cutify=False)."""
-    header = [""] + [repr(w) for w in words]
-    body = [[repr(v)] + list(row) for v, row in zip(words, matrix)]
-    return [header] + body
-
-
 @pytest.fixture(scope="module")
 def live_packed_groups():
     """Generate packed grouped pairing matrices from current production code."""
     groups = Word.grouped_lyndon_words(n=N, packed=True)
-    out = {}
-    for sig, words in groups.items():
-        pm = PairingMatrix(words)
-        out[sig] = (words, pm.matrix)
-    return out
+    return {sig: PairingMatrix(words) for sig, words in groups.items()}
 
 
 def test_reference_dir_exists():
@@ -87,8 +76,8 @@ def test_live_csv_content_matches_reference(live_packed_groups):
         sig = filename[len("group_") : -len(".csv")]
         assert sig in live_packed_groups, f"No live group for {filename}"
 
-        words, matrix = live_packed_groups[sig]
-        live_rows = normalize_matrix(matrix_as_csv_rows(words, matrix))
+        pm = live_packed_groups[sig]
+        live_rows = normalize_matrix(pm.to_csv_rows())
         ref_rows = normalize_matrix(
             load_csv(os.path.join(REFERENCE_DIR, filename))
         )
