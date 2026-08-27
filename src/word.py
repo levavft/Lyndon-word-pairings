@@ -15,7 +15,7 @@ class Word:
             # Convert string to integer indices (a→0, b→1, etc.)
             self.letters = tuple(self.alphabet.index(ch) for ch in letters)
         elif isinstance(letters, int):
-            # Convert an integer to indices. (1->0, 2->1, etc. For each digit)
+            # Convert an integer to indices. (1->0, 2->1, etc.)
             self.letters = tuple(int(d)-1 for d in str(letters))
         else:
             self.letters = tuple(letters)
@@ -49,23 +49,28 @@ class Word:
         raise TypeError("Word can only be concatenated with Word")
 
     def _rotations(self, include_trivial=False):
-        """All nontrivial rotations of the word."""
+        """All (non-trivial) rotations of the word."""
         if include_trivial:
             yield self.letters
         for i in range(1, len(self.letters)):
             yield self.letters[i:] + self.letters[:i]
 
+    def _suffixes(self, include_trivial=False):
+        """All (non-trivial) suffixes of the word."""
+        if include_trivial:
+            yield self.letters
+        for i in range(1, len(self.letters)):
+            yield self.letters[i:]
+        if include_trivial:
+            yield tuple()
+
     def is_lyndon(self):
         """
-        True iff the word is Lyndon: nonempty and strictly lexicographically
-        smaller than all of its nontrivial rotations.
-
-        TODO: consider the equivalent "smaller than all nontrivial suffixes"
-        characterization, which is probably faster.
+        True iff the word is Lyndon: nonempty and strictly lexicographically smaller than all of its proper suffixes.
         """
         if not self.letters:
             return False
-        return all(self.letters < rot for rot in self._rotations())
+        return all(self.letters < suf for suf in self._suffixes())
 
     def to_tuple(self):
         return self.letters
